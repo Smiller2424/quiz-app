@@ -49,7 +49,33 @@ class QuizScreenState extends State<QuizScreen> {
         _answered = false;
         _selectedAnswer = null;
       });
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Quiz Completed 🎉"),
+          content: Text("Your Score: $_score / ${_questions.length}"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                restartQuiz();
+              },
+              child: const Text("Restart"),
+            ),
+          ],
+        ),
+      );
     }
+  }
+
+  void restartQuiz() {
+    setState(() {
+      _currentIndex = 0;
+      _score = 0;
+      _answered = false;
+      _selectedAnswer = null;
+    });
   }
 
   Color getButtonColor(String option) {
@@ -73,6 +99,8 @@ class QuizScreenState extends State<QuizScreen> {
 
     final question = _questions[_currentIndex];
 
+    double progress = (_currentIndex + 1) / _questions.length;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Quiz App")),
       body: Center(
@@ -81,6 +109,21 @@ class QuizScreenState extends State<QuizScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Question Counter
+              Text(
+                "Question ${_currentIndex + 1} / ${_questions.length}",
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Progress Bar
+              LinearProgressIndicator(value: progress),
+
+              const SizedBox(height: 20),
+
+              // Question Text
               Text(
                 question.question,
                 textAlign: TextAlign.center,
@@ -89,8 +132,10 @@ class QuizScreenState extends State<QuizScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(height: 20),
 
+              // Answer Buttons
               ...question.options.map((option) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -99,10 +144,14 @@ class QuizScreenState extends State<QuizScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: getButtonColor(option),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed:
                           _answered ? null : () => checkAnswer(option),
-                      child: Text(option),
+                      child: Text(
+                        option,
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
                 );
@@ -110,16 +159,19 @@ class QuizScreenState extends State<QuizScreen> {
 
               const SizedBox(height: 20),
 
+              // Next Button
               ElevatedButton(
                 onPressed: nextQuestion,
                 child: const Text("Next"),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
+              // Score
               Text(
                 "Score: $_score",
-                style: const TextStyle(fontSize: 16),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
